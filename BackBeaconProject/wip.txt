@@ -1,0 +1,38 @@
+﻿Scaffold-DbContext "Server=sql02.prod.te.tld;Database=Marketing_Tracking;Trusted_Connection=false;User ID=wesleys;Password=oi49&kjHJmt%#uy_" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
+
+
+IConfigurationRoot configuration = new ConfigurationBuilder()
+.SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+.AddJsonFile("appsettings.json")
+.Build();
+optionsBuilder.UseSqlServer(configuration.GetConnectionString("BeaconDatabase"));
+
+
+                IConfigurationRoot configuration = new ConfigurationBuilder()
+                    .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                    .AddJsonFile("appsettings.json")
+                    .Build();
+                optionsBuilder.UseSqlServer(configuration.GetConnectionString("BeaconDatabase"));
+
+
+
+public class MyCustomFilter: ActionFilterAttribute
+{
+   public override void OnActionExecuting(ActionExecutingContext context)
+    {
+      //this is querystring being passed from app1 to my app2 controller
+      string id =  userId = filterContext.ActionArguments["id"].ToString();
+
+        //Creating cookie
+       filterContext.HttpContext.Response.Cookies.Append("Id", is, new CookieOptions()
+                {
+                    Expires = DateTime.Now.AddDays(5)
+                });
+
+        //Now I can check for this cookie and then proceed or deny acccess
+    }
+}
+
+Scaffold-DbContext "Server=lenovo-p52s-05\\sqlexpress;Database=Marketing_Tracking;Trusted_Connection=true;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
+
+Scaffold-DbContext "Server=sql02.prod.te.tld;Database=Marketing_Tracking;Trusted_Connection=false;User ID=wesleys;Password=oi49&kjHJmt%#uy_" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force

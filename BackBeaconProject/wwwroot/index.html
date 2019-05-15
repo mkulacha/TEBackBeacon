@@ -1,0 +1,542 @@
+﻿
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+    <title>ADXTRAVEL &raquo; Travel Technology Solutions</title>
+
+    <!--[if lt IE 9]>
+        <script src="scripts/html5shiv.js"></script>
+        <script src="scripts/respond.min.js"></script>
+    <![endif]-->
+
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.2/css/bootstrap.min.css" rel="stylesheet" type="text/css">
+    <link href='//fonts.googleapis.com/css?family=Open+Sans:300,400italic,400,700,600' rel='stylesheet' type='text/css'>
+
+    <style>
+        body {
+            font-family: 'Open Sans', Arial, sans-serif;
+        }
+
+        nav {
+            padding: 10px 0;
+            background-color: #000;
+            color: #8a8a8a;
+            font-size: 15px;
+        }
+
+            nav.alt {
+                background-color: rgba(0, 0, 0, 0.85);
+            }
+
+            nav ul {
+                margin: 15px 0 5px 0;
+            }
+
+                nav ul li {
+                    list-style-type: none;
+                    display: inline;
+                    margin-left: 60px;
+                }
+
+                    nav ul li:first-child {
+                        margin-left: 0;
+                    }
+
+                    nav ul li a:link, nav ul li a:visited {
+                        color: #8a8a8a;
+                    }
+
+                    nav ul li a:active, nav ul li a:hover {
+                        color: #fff;
+                        text-decoration: none;
+                    }
+
+        p {
+            font-size: 14px;
+        }
+
+        #logoContainer {
+            background-color: #000;
+        }
+
+        #logo {
+        }
+
+        #hero {
+            background-image: url('images/hero-background.jpg');
+            height: 100%;
+            width: 100%;
+            padding: 300px 0;
+            font-weight: 300;
+            color: #000;
+            background-size: cover;
+            background-repeat: no-repeat;
+        }
+
+        #heroDiscover {
+            font-size: 140px;
+            display: block;
+            margin-bottom: 10px;
+            line-height: 100%;
+        }
+
+        #heroPowering {
+            font-size: 30px;
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+            position: relative;
+            top: 10px;
+            left: -170px;
+        }
+
+        #heroTech {
+            margin-top: 30px;
+            font-size: 30px;
+            display: block;
+        }
+
+        #heroConsort {
+            line-height: 120%;
+            font-size: 30px;
+            margin-top: 50px;
+            font-weight: 300;
+        }
+
+        h1 {
+            margin-top: 0px;
+            line-height: 100%;
+            font-family: 'Open Sans', Arial, sans-serif;
+            font-size: 155px;
+            font-weight: 300;
+            margin-left: 20px;
+        }
+
+        h2 {
+            font-family: 'Open Sans', Arial, sans-serif;
+            font-size: 72px;
+            font-weight: 300;
+            margin-top: 0px;
+        }
+
+        h3 {
+            margin-top: 50px;
+            font-family: 'Open Sans', Arial, sans-serif;
+            font-weight: 300;
+        }
+
+        .affix {
+            width: 100%;
+            z-index: 10;
+        }
+
+        #aboutPicture {
+            background-position: 50% 0;
+            background-repeat: no-repeat;
+        }
+
+        #aboutText {
+            background-color: #fff;
+            color: #000;
+            padding: 0 20px 20px 20px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            border-bottom-left-radius: 2px;
+            border-bottom-right-radius: 2px;
+        }
+
+        #team {
+            margin-top: 70px;
+        }
+
+        #managementTeam {
+            padding: 10px;
+            background-color: #000;
+            color: #fff;
+            font-size: 24px;
+            text-transform: uppercase;
+        }
+
+        .person {
+            margin-top: 40px;
+        }
+
+        .name {
+            display: block;
+            font-size: 24px;
+        }
+
+            .name a {
+                color: #000000;
+            }
+
+        .title {
+            display: block;
+        }
+
+        .email {
+            display: block;
+        }
+
+        .phone {
+            display: block;
+        }
+
+        #strikeline {
+            width: 1px;
+            height: 1000px;
+            background-color: #000;
+            position: absolute;
+            left: 585px;
+            float: left;
+        }
+
+        #beach {
+            margin-top: 100px;
+        }
+
+        #partners {
+            margin-top: 160px;
+        }
+
+        #partnersHeading {
+            padding-top: 10px;
+            border-top: 5px solid #000;
+        }
+
+        #partnersInner {
+            margin-top: 0px;
+            /*background-image: url('images/Kcares3.jpg');
+                background-repeat: no-repeat;*/
+        }
+
+        .partners-row {
+            margin-top: 10px;
+            margin-bottom: 10px;
+            color: #000;
+        }
+
+        #contact {
+            margin-top: 80px;
+            /*background-image: url('images/footer-image.jpg');
+                background-position: bottom;
+                background-repeat: no-repeat;*/
+        }
+
+        #contactForm {
+            margin-top: 70px;
+        }
+
+            #contactForm label {
+                font-family: 'Open Sans', Arial, sans-serif;
+                text-transform: uppercase;
+                font-weight: 300;
+            }
+
+            #contactForm input, #contactForm textarea {
+                border: 0;
+                background-color: lightgray;
+            }
+
+            #contactForm textarea {
+                height: 80px;
+            }
+
+            #contactForm button {
+                background-color: darkgray;
+                color: #fff;
+            }
+
+        #contactInfo {
+            margin-top: 110px;
+        }
+
+            #contactInfo span {
+                font-size: 16px;
+                display: block;
+            }
+
+
+
+        .partner-image {
+            margin-left: 82px;
+        }
+
+            .partner-image:first-child {
+                margin-left: 0;
+            }
+
+        #services {
+            margin-top: 20px;
+        }
+
+        #products {
+            margin-top: 40px;
+        }
+
+        .product-desc {
+            display: block;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+
+        .product {
+            float: left;
+            margin-left: 42px;
+        }
+
+        #partnersText {
+            margin-top: 25px;
+        }
+
+        #what {
+            margin-top: 80px;
+        }
+
+        .CompanyName {
+            padding-top: 20px;
+            font-weight: bold;
+            display: block;
+        }
+
+        .CompanyLink {
+            padding-bottom: 10px;
+            display: block;
+            font-weight: bolder;
+        }
+
+        /* Responsives */
+
+        @media (max-width: 649px) {
+            nav ul li {
+                margin-left: 3px;
+            }
+
+            #hero {
+                padding: 150px 0;
+            }
+        }
+
+        @media (max-width: 991px) {
+            nav ul li {
+                margin-left: 10px;
+            }
+
+            #strikeline {
+                display: none;
+            }
+
+            #hero {
+                padding: 200px 0;
+            }
+
+            #heroPowering {
+                position: inherit;
+                left: 0;
+            }
+
+            h1 {
+                font-size: 100px;
+            }
+
+            #heroConsort {
+                margin-top: 30px;
+                margin-left: 10px;
+                font-size: 22px;
+            }
+
+            .partner-image {
+                width: 23%;
+            }
+
+            .product {
+                width: 30%;
+            }
+
+                .product img {
+                    width: 100%;
+                }
+        }
+
+        @media (max-width: 1200px) {
+            #strikeline {
+                left: 485px;
+            }
+
+            .partner-image {
+                margin-left: 14px;
+            }
+
+            .product {
+                margin-left: 5px;
+            }
+        }
+    </style>
+    <link rel="shortcut icon" href="favicon.ico">
+</head>
+
+<body>
+    <div id="ph"></div>
+    <div id="pageHeader" data-spy="affix">
+        <nav>
+            <div class="container">
+                <div class="row">
+                    <!--<div class="col-md-2 col-sm-3 col-xs-4">ADXTRAVEL</div>-->
+                    <div class="col-md-10 col-sm-9 col-xs-8 text-right">
+                        <ul>
+                            <li><a href="#contact" title="Contact us"><a href="mailto:admin@adxtravel.com">Contact</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+
+    <div id="hero" data-offset="120">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <span id="heroDiscover">Discover</span>
+                    <span id="heroPowering">Technology for Travel Architects</span>
+                    <span id="heroTech">Powering 800M in travel transactions</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="about" data-offset="68" class="container">
+        <div class="row">
+            <div class="col-md-5 col-sm-5"><h1>About</h1></div>
+            <div class="col-md-offset-1 col-md-6 col-sm-7"><p id="heroConsort">From startup to $800 million<br />in ten years</p></div>
+        </div>
+    </div>
+    <div id="aboutPicture">
+        <div class="container">
+            <div class="row" style="position: relative; top: -2px;">
+                <div class="col-md-12">
+                    <div id="aboutText">
+
+                        <p>We are creating and fine tuning the technology, digital marketing and operational processes that are reinventing the travel industry. Our custom developed TMT operating system is a key competitive advantage for Kensington Tours and has powered its growth to $100 million in sales. Our DBO system powers Worldview Travel and Travel Edge with its $600 million in sales across 15 offices. And our ADX travel enviroment serves the $100 billion traditional travel agency market. The company also provides centralized finance, support, infrastructure, procurement, acquisition, HR and legal services.</p>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="what" data-offset="60">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h2>What we do</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-offset-2 col-md-8 text-center">
+                    <p>Architecting tools for the travel industry by combining cutting edge new technology with best industry practices.  </p>
+                </div>
+            </div>
+            <div class="row" id="products">
+                <div class="col-md-offset-1 col-md-10">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="product text-center">
+                                <img src="images/sites-traveledge.jpg" />
+                                <span class="product-desc">Tour Management Tech (TMT)<br />Powering Kensington Tours private guided travel, implemented with 300 Destination Management Companies in 80 countries.</span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="product text-center">
+                                <img src="images/sites-traveledge-dashboard.jpg" />
+                                <span class="product-desc">Digital Back Office (DBO)<br />Powering Worldview Travel across 15 offices in three countries, efficient ERP implementation, live reporting, contract optimization.</span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="product text-center">
+                                <img src="images/sites-traveledge-cruise-tool.jpg" />
+                                <span class="product-desc">Agent Digital Experience (ADX)<br />Complete virtual agency for travel agent, multi-GDS implementation, CRM, accounting, reporting, merchant processing.</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-offset-2 col-md-8 text-center">
+                    <p>&nbsp;</p>
+                </div>
+
+                <div class="col-md-offset-2 col-md-8 text-center">
+                    <p>Making the complex simple through the use of technology;</p>
+                    <p>Staying collaborative and service oriented; and</p>
+                    <p>The value of the customer experience, for our customers and their customers.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <div id="contact" data-offset="120">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <h2>Contact</h2>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-12 text-center">
+                    <span class="CompanyName">ADXTravel</span>
+                    <p>2 Queen Street East</p>
+                    <p>Toronto, Ontario, M5C 3G7</p>
+                    <p><a href="mailto:admin@adxtravel.com">Contact</a></p>
+                    <p></p>
+                    <!--<span class="CompanyLink">To join our dynamic professional management team: <a href="mailto:jobs@traveledge.com">jobs@traveledge.com</a></span>-->
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top: 150px;">
+            <div class="col-md-12 text-center">
+                <p>Technology for Travel Architects</p>
+            </div>
+        </div>
+
+    </div>
+    </div>
+
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
+
+    <script>
+			$(document).scroll(function () {
+				var scrollAmount = $(document).scrollTop();
+
+				if (scrollAmount > 120) {
+					$('nav').addClass('alt');
+				} else {
+					$('nav').removeClass('alt');
+				}
+
+			});
+
+			$('nav a').click(function () {
+				var elem = $(this).attr('href');
+
+				var offset = $(elem).data('offset')
+
+				$('html, body').animate({
+					scrollTop: $(elem).offset().top - offset
+				}, 1000);
+
+				return false;
+			});
+    </script>
+</body>
+</html>
