@@ -1,5 +1,4 @@
-﻿
-using Microsoft.AspNetCore.Builder;
+﻿using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -7,6 +6,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using BackBeacon.Services;
 using System;
+using Hangfire;
+using Hangfire.SqlServer;
 
 namespace BackBeacon
 {
@@ -52,6 +53,8 @@ namespace BackBeacon
             //https://docs.microsoft.com/en-us/aspnet/core/security/cookie-sharing?view=aspnetcore-2.2
             //services.AddDataProtection().ProtectKeysWithCertificate("thumbprint");
 
+            services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("JobsDatabase")));
+            services.AddHangfireServer();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -101,7 +104,7 @@ namespace BackBeacon
             app.UseSession();
 
             //app.UseHttpContextItemsMiddleware();
-
+            app.UseHangfireDashboard();
 
             // Add MVC to the request pipeline.
             app.UseMvc();

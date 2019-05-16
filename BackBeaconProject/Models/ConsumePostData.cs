@@ -10,7 +10,7 @@ namespace BackBeacon.Models
         public string PageToken { get; set; }
         public int CampaignId { get; set; }
         public int ActionId { get; set; }
-        public int AttributeId { get; set; }
+        public string AttributeId { get; set; }
         public string AttrValue { get; set; }
     }
 }

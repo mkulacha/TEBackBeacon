@@ -11,8 +11,8 @@ namespace BackBeacon.Models
         public string BeaconId { get; set; }
         public int UniversalClientId { get; set; }
         public int CampaignId { get; set; }
-        public int CampaignActionId { get; set; }
-        public int CampaignActionAttributeId { get; set; }
+        public int ActionId { get; set; }
+        public string AttributeId { get; set; }
         public string SessionId { get; set; }
         public string TraceId { get; set; }
         public string Referrer { get; set; }
@@ -23,12 +23,14 @@ namespace BackBeacon.Models
         public string Fingerprint { get; set; }
         public string Error { get; set; }
 
-        public void SetGroup1(string pageToken, int campaignId, int actionId, int attributeId, string attrValue)
+        public string RunTime { get; set; }
+
+        public void SetGroup1(string pageToken, int campaignId, int actionId, string attributeId, string attrValue)
         {
             PageToken = pageToken;
             CampaignId = campaignId;
-            CampaignActionId = actionId;
-            CampaignActionAttributeId = attributeId;
+            ActionId = actionId;
+            AttributeId = attributeId;
             AttrValue = attrValue;
         }
 
