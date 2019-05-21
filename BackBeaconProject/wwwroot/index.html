@@ -515,28 +515,28 @@
     <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.2/js/bootstrap.min.js"></script>
 
     <script>
-			$(document).scroll(function () {
-				var scrollAmount = $(document).scrollTop();
+        $(document).scroll(function () {
+            var scrollAmount = $(document).scrollTop();
 
-				if (scrollAmount > 120) {
-					$('nav').addClass('alt');
-				} else {
-					$('nav').removeClass('alt');
-				}
+            if (scrollAmount > 120) {
+                $('nav').addClass('alt');
+            } else {
+                $('nav').removeClass('alt');
+            }
 
-			});
+        });
 
-			$('nav a').click(function () {
-				var elem = $(this).attr('href');
+        $('nav a').click(function () {
+            var elem = $(this).attr('href');
 
-				var offset = $(elem).data('offset')
+            var offset = $(elem).data('offset')
 
-				$('html, body').animate({
-					scrollTop: $(elem).offset().top - offset
-				}, 1000);
+            $('html, body').animate({
+                scrollTop: $(elem).offset().top - offset
+            }, 1000);
 
-				return false;
-			});
+            return false;
+        });
     </script>
 </body>
 </html>

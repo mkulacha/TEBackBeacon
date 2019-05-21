@@ -1,0 +1,33 @@
+﻿<rewrite>
+  <rules>
+    <!--
+    <rule name="wwwroot-static" stopProcessing="true">
+      <match url="([\S]+[.](html|htm|svg|js|css|png|gif|jpg|jpeg))" />
+      <action type="Rewrite" url="wwwroot/{R:1}" />
+    </rule>
+    -->
+    
+    <rule name="empty-root-index-rule" stopProcessing="true">
+      <match url="^$" />
+      <action type="Rewrite" url="index.html" appendQueryString="false" />
+    </rule>
+
+    <rule name="legal-page-rule" stopProcessing="true">
+      <match url="^legal$" />
+      <action type="Rewrite" url="legal.html" appendQueryString="false"/>
+    </rule>
+
+    <rule name="privacy-page-rule" stopProcessing="true">
+      <match url="^privacy$" />
+      <action type="Rewrite" url="privacy.html" appendQueryString="false"/>
+    </rule>
+    
+    <!--
+    <rule name="Rewrite segment to id querystring" stopProcessing="true">
+      <match url="^iis-rules-rewrite/(.*)$" />
+      <action type="Rewrite" url="rewritten?id={R:1}"  appendQueryString="false"/>
+    </rule>
+    -->
+  </rules>
+</rewrite>
+
