@@ -22,8 +22,9 @@ namespace BackBeacon.Models
         public string PageToken { get; set; }
         public string Fingerprint { get; set; }
         public string Error { get; set; }
-
-        public string RunTime { get; set; }
+        public int RunTime { get; set; }
+        public string RunTimeSummary { get; set; }
+        public string StashType { get; set; }
 
         public void SetGroup1(string pageToken, int campaignId, int actionId, string attributeId, string attrValue)
         {

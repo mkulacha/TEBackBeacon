@@ -20,12 +20,12 @@ namespace BackBeacon.Controllers
         private readonly IHttpContextualizer _httpCtx;
         private readonly Marketing_TrackingContext _dbCtx;
 
-        private readonly string TRACKING_PIXEL = @"R0lGODlhAQABAPcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAABAAEAAAgEAP8FBAA7";
-        //"R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw=="
-        //"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="
-        private readonly string COOKIE_NAME_BEACON = "Beacon";
-        //private readonly string COOKIE_NAME_UNIVERSAL_ID = "";
-        private readonly string MIME_TYPE_IMG_GIF = "image/gif";
+        private const string TRACKING_PIXEL = @"R0lGODlhAQABAPcAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAABAAEAAAgEAP8FBAA7";
+        //private const string TRACKING_PIXEL = @"R0lGODlhAQABAIABAP///wAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw=="
+
+        private const string COOKIE_NAME_BEACON = "Beacon";
+
+        private const string MIME_TYPE_IMG_GIF = "image/gif";
         
         public BltController(ICookieService cookieService, IHttpContextualizer httpContextualizer, Marketing_TrackingContext mtContext)
         {
@@ -34,11 +34,14 @@ namespace BackBeacon.Controllers
             this._dbCtx = mtContext;
         }
 
+        // <
         //[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [HttpGet("pixel")]
         public ActionResult<string> GetPixelAction(string pageToken, int campaignId, int actionId, string attributeId, string attrValue = "")
         {
-            this.Stash(pageToken, campaignId, actionId, attributeId, attrValue);
+            const string STASH_TYPE = "pixel";
+
+            this.Stash(STASH_TYPE, pageToken, campaignId, actionId, attributeId, attrValue);
      
             return File(System.Convert.FromBase64String(TRACKING_PIXEL), MIME_TYPE_IMG_GIF);
         }
@@ -47,11 +50,12 @@ namespace BackBeacon.Controllers
         [HttpPost("consume")]
         public ActionResult<string> PostLogAction([FromBody] string data)
         {
+            const string STASH_TYPE = "consume";
             try
             {
                 ConsumePostData cpd = JsonConvert.DeserializeObject<ConsumePostData>(data);
 
-                if (this.Stash(cpd.PageToken, cpd.CampaignId, cpd.ActionId, cpd.AttributeId, cpd.AttrValue))
+                if (this.Stash(STASH_TYPE, cpd.PageToken, cpd.CampaignId, cpd.ActionId, cpd.AttributeId, cpd.AttrValue))
                 {
                     return "{ \"status\": \"OK\" }";
                 }
@@ -66,7 +70,8 @@ namespace BackBeacon.Controllers
             }
         }
 
-        private bool Stash(string pageToken, int campaignId, int actionId, string attributeId, string attrValue = "")
+        // Inner Function: Stash - process incoming 
+        private bool Stash(string stashType, string pageToken, int campaignId, int actionId, string attributeId, string attrValue = "")
         {
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -116,12 +121,14 @@ namespace BackBeacon.Controllers
             }
             finally
             {
-                t.RunTime = StopAndCalcRuntime(stopWatch);
+                Tuple<int, string> runTime = StopAndCalcRuntime(stopWatch);
+                t.RunTime = runTime.Item1;
+                t.RunTimeSummary = runTime.Item2;
                 BackgroundJob.Enqueue(() => this.PushAudit(bts.Millisecond.ToString(), t));
             }
         }
 
-
+        // Resolve beacon cookie, additionally obtain a UniversalClient Id from Beacon-Database
         private Tuple<string, int> ResolveBeaconCookie()
         {
             string beaconId = null;
@@ -150,6 +157,7 @@ namespace BackBeacon.Controllers
                 }
                 else
                 { 
+                    // May be forced to assign to a new universal user id.
                     universalId = this.GetNewUniversalIdentifier(beaconId);
                 }
             }
@@ -181,7 +189,8 @@ namespace BackBeacon.Controllers
                     WebSessionId = sessionId,
                     UserAgent = userAgent,
                     RemoteAddress = ip,
-                    BrowserFootprint = footprint
+                    BrowserFootprint = footprint,
+                    ServerTimeStamp = bts
                 };
                 _dbCtx.CampaignEvent.Add(ce);
                 _dbCtx.SaveChanges();
@@ -207,6 +216,7 @@ namespace BackBeacon.Controllers
             }
         }
 
+       
         public void PushAudit(string marker, Models.Trace trace)
         {
             try
@@ -226,14 +236,15 @@ namespace BackBeacon.Controllers
         }
 
 
-        private string StopAndCalcRuntime(Stopwatch s)
+
+        private Tuple<int,string> StopAndCalcRuntime(Stopwatch s)
         {
             s.Stop();
             TimeSpan ts = s.Elapsed;
             string elapsedTime = String.Format("{0:00}:{1:00}:{2:00}.{3:00}",
                 ts.Hours, ts.Minutes, ts.Seconds,
                 ts.Milliseconds / 10);
-            return "Elapsed:" + elapsedTime + " | Millis:" + ts.Milliseconds.ToString();
+            return new Tuple<int, string>(ts.Milliseconds, "Elapsed:" + elapsedTime);
         }
 
         private Exception BltInputParamsException(string v)

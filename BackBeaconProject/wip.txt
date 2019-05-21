@@ -35,4 +35,4 @@ public class MyCustomFilter: ActionFilterAttribute
 
 Scaffold-DbContext "Server=lenovo-p52s-05\\sqlexpress;Database=Marketing_Tracking;Trusted_Connection=true;" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
 
-Scaffold-DbContext "Server=sql02.prod.te.tld;Database=Marketing_Tracking;Trusted_Connection=false;User ID=wesleys;Password=oi49&kjHJmt%#uy_" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force
+Scaffold-DbContext "Server=sql-srv;Database=Marketing_Tracking_Dev;Trusted_Connection=false;User ID=mkt_dev;Password=fSff=6Jyk+r2Z*kD" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models -Force

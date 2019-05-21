@@ -18,6 +18,7 @@ namespace BackBeacon.Models
         public string BrowserFootprint { get; set; }
         public string UserAgent { get; set; }
         public string WebSessionId { get; set; }
+        public DateTime? ServerTimeStamp { get; set; }
 
         public virtual CampaignAction CampaignAction { get; set; }
         public virtual UniversalClient UniversalClient { get; set; }
