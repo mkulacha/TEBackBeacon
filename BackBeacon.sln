@@ -8,8 +8,6 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{42C1DDB5-AF22-4F7C-B23D-2D2EDA463EA3}"
 	ProjectSection(SolutionItems) = preProject
 		.filenesting.json = .filenesting.json
-		BackBeaconProject\ApacheModRewrite.txt = BackBeaconProject\ApacheModRewrite.txt
-		BackBeaconProject\IISUrlRewrite.xml = BackBeaconProject\IISUrlRewrite.xml
 	EndProjectSection
 EndProject
 Global
