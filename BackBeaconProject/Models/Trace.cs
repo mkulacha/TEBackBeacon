@@ -25,7 +25,9 @@ namespace BackBeacon.Models
         public int RunTime { get; set; }
         public string RunTimeSummary { get; set; }
         public string StashType { get; set; }
-
+        public string HttpMethod { get; set; }
+        public IDictionary<string,string> DataDict { get; set; }
+        
         public void SetGroup1(string pageToken, int campaignId, int actionId, string attributeId, string attrValue)
         {
             PageToken = pageToken;

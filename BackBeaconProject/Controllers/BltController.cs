@@ -6,6 +6,8 @@ using System.Linq;
 using Newtonsoft.Json;
 using Hangfire;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Http;
+using System.Collections.Generic;
 
 /**
  * BLT - Beacon Log Tracker Controller
@@ -26,6 +28,8 @@ namespace BackBeacon.Controllers
         private const string COOKIE_NAME_BEACON = "Beacon";
 
         private const string MIME_TYPE_IMG_GIF = "image/gif";
+
+        private string[] RESERVED_PARAMS = { "pagetoken", "campaignid", "actionid", "attributeid", "attrvalue" };
         
         public BltController(ICookieService cookieService, IHttpContextualizer httpContextualizer, Marketing_TrackingContext mtContext)
         {
@@ -37,41 +41,75 @@ namespace BackBeacon.Controllers
         // <
         //[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [HttpGet("pixel")]
-        public ActionResult<string> GetPixelAction(string pageToken, int campaignId, int actionId, string attributeId, string attrValue = "")
+        public ActionResult<string> GetPixelAction(string uid, string session, string pageToken, int campaignId, int actionId, string attributeId, string attrValue)
         {
+            const string HTTP_METHOD = "GET";
             const string STASH_TYPE = "pixel";
 
-            this.Stash(STASH_TYPE, pageToken, campaignId, actionId, attributeId, attrValue);
+            this.StashEvent(STASH_TYPE, HTTP_METHOD, uid, session, pageToken, campaignId, actionId, attributeId, attrValue, this.ParseQueryStringForAtttributes(true));
      
             return File(System.Convert.FromBase64String(TRACKING_PIXEL), MIME_TYPE_IMG_GIF);
         }
 
+
         //[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        [HttpPost("consume")]
-        public ActionResult<string> PostLogAction([FromBody] string data)
+        [HttpPost("form")]
+        public ActionResult<string> PostFormAction()
         {
-            const string STASH_TYPE = "consume";
+            //const string HTTP_METHOD = "POST";
+            //const string STASH_TYPE = "form";
+
             try
             {
-                ConsumePostData cpd = JsonConvert.DeserializeObject<ConsumePostData>(data);
+                /*
+                Dictionary<string,string> params = this.ParseFormForAtttributes(false);
 
-                if (this.Stash(STASH_TYPE, cpd.PageToken, cpd.CampaignId, cpd.ActionId, cpd.AttributeId, cpd.AttrValue))
+                if (this.StashEvent(STASH_TYPE, HTTP_METHOD, cpd.UID, cdp.session, cpd.PageToken, cpd.CampaignId, cpd.ActionId, cpd.AttributeId, cpd.AttrValue, )
                 {
-                    return "{ \"status\": \"OK\" }";
+                    return Ok("{ \"status\": \"OK\" }");
                 }
                 else
                 {
-                    return "{ \"status\": \"NOT OK\" }";
+                    return Ok("{ \"status\": \"NOT OK\" }");
+                }
+                */
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return Ok(String.Format("{{ \"status\": \"NOT OK\", \"exception\": \"{0}\" }}", ex.Message));
+            }
+        }
+
+
+        //[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
+        [HttpPost("consume")]
+        public ActionResult<string> PostConsumeAction([FromBody] string json)
+        {
+            const string HTTP_METHOD = "POST";
+            const string STASH_TYPE = "consume";
+
+            try
+            {
+                ConsumePostData cpd = JsonConvert.DeserializeObject<ConsumePostData>(json);
+
+                if (this.StashEvent(STASH_TYPE, HTTP_METHOD, cpd.UID, cpd.Session, cpd.PageToken, cpd.CampaignId, cpd.ActionId, cpd.AttributeId, cpd.AttrValue, this.ParseJsonForAtttributes(json, true)))
+                {
+                    return Ok("{ \"status\": \"OK\" }");
+                }
+                else
+                {
+                    return Ok("{ \"status\": \"NOT OK\" }");
                 }
             }
             catch (Exception ex)
             {
-                return String.Format("{{ \"status\": \"NOT OK\", \"exception\": \"{0}\" }}", ex.Message);
+                return Ok(String.Format("{{ \"status\": \"NOT OK\", \"exception\": \"{0}\" }}", ex.Message));
             }
         }
 
-        // Inner Function: Stash - process incoming 
-        private bool Stash(string stashType, string pageToken, int campaignId, int actionId, string attributeId, string attrValue = "")
+        // Inner Function: Stash - process/log event
+        private bool StashEvent(string stashType, string httpMethod, string uid, string session, string pageToken, int campaignId, int actionId, string attributeId, string attrValue, IDictionary<string,string> dataDict)
         {
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -82,8 +120,11 @@ namespace BackBeacon.Controllers
             // Initialize Trace
             Models.Trace t = new Models.Trace
             {
-                BeaconTimestamp = bts
-            };
+                BeaconTimestamp = bts,
+                StashType = stashType,
+                HttpMethod = httpMethod,
+                DataDict = dataDict
+            };  
 
             try
             {
@@ -91,22 +132,33 @@ namespace BackBeacon.Controllers
                 t.SetGroup1(pageToken, campaignId, actionId, attributeId, attrValue);
 
                 // Validation of Input Params
-                if (campaignId < 1 || actionId < 1 || String.IsNullOrEmpty(attributeId) || String.IsNullOrEmpty(pageToken))
+                if (campaignId < 1 || actionId < 1 || String.IsNullOrEmpty(pageToken))
                 {
-                    throw BltInputParamsException("Input params invalid and/or unset");
+                    throw BltInputParamsException("Required param not set!");
                 }
 
                 // Lookup Up User/Beacon/Cookie
-                Tuple<string, int> rbc = this.ResolveBeaconCookie();
-                string beaconId = rbc.Item1;
-                int universalId = rbc.Item2;
-                t.BeaconId = beaconId;
-                t.UniversalClientId = universalId;
+                string beaconId = uid;
+                int universalId = -1;
+                if (String.IsNullOrEmpty(uid))
+                {
+                    Tuple<string, int> rbc = this.ResolveBeaconCookie();
+                    beaconId = rbc.Item1;
+                    universalId = rbc.Item2;
+                    t.BeaconId = beaconId;
+                    t.UniversalClientId = universalId;
+                }
+                else
+                {
+                    universalId = this.ResolveBeaconUserIdentifier(uid);
+                }
 
                 // BEACON STORAGE
                 BackgroundJob.Enqueue(() => this.StoreBeaconDataset(
-                    bts, universalId, campaignId, actionId, attributeId, attrValue,
-                    _httpCtx.GetSessionId(), _httpCtx.GetUserAgent(), _httpCtx.GetIpAddress(),
+                    bts, universalId, campaignId, actionId, attributeId, attrValue, dataDict,
+                    (!String.IsNullOrEmpty(session)? session: _httpCtx.GetSessionId()), 
+                    _httpCtx.GetUserAgent(), 
+                    _httpCtx.GetIpAddress(),
                     new Fingerprint(_httpCtx).Generate()));
                 t.setGroup2(_httpCtx);
 
@@ -165,7 +217,25 @@ namespace BackBeacon.Controllers
             return new Tuple<string, int>(beaconId, universalId);
         }
 
-        private int GetNewUniversalIdentifier(string beaconId)
+        private int ResolveBeaconUserIdentifier(string uid)
+        {
+            var query = _dbCtx.UniversalClient as IQueryable<UniversalClient>;
+            query = query.Where(x => x.ExternalId == uid);
+            UniversalClient[] list = query.ToArray<UniversalClient>();
+            int universalId = -1;
+            if (list.Length > 0)
+            {
+                universalId = list.First<UniversalClient>().UniversalClientId;
+            }
+            else
+            {
+                // May be forced to assign to a new universal user id.
+                universalId = this.GetNewUniversalIdentifier(uid);
+            }
+            return universalId;
+        }
+
+    private int GetNewUniversalIdentifier(string beaconId)
         {
             UniversalClient uc = new UniversalClient
             {
@@ -178,7 +248,7 @@ namespace BackBeacon.Controllers
             return universalId;
         }
 
-        public void StoreBeaconDataset(DateTime bts, int universalId, int campaignId, int actionId, string attributeId, string attrValue, string sessionId, string userAgent, string ip, string footprint)
+        public void StoreBeaconDataset(DateTime bts, int universalId, int campaignId, int actionId, string attributeId, string attrValue, IDictionary<string,string> dataDict, string sessionId, string userAgent, string ip, string footprint)
         { 
             try {
                 // Add Campaign Event
@@ -196,19 +266,63 @@ namespace BackBeacon.Controllers
                 _dbCtx.SaveChanges();
 
                 // Add CampaignEvent Attributes; Possible multiple provided
-                string[] attributeIdArray = attributeId.Split(",");
-                string[] attrValueArray = attrValue.Split(",");
-                for (int i=0; i < attributeIdArray.Length;i++)
-                { 
-                    CampaignEventAttribute cea = new CampaignEventAttribute
+                if (!String.IsNullOrEmpty(attributeId))
+                {
+                    string[] attributeIdArray = attributeId.Split(",");
+                    string[] attrValueArray = { };
+                    if (attributeIdArray.Length > 1)
                     {
-                        CampaignEventId = ce.CampaignEventId,
-                        CampaignActionAttributeId = int.Parse(attributeIdArray[i]),
-                        AttributeValue = attrValueArray[i]
-                    };
-                    _dbCtx.CampaignEventAttribute.Add(cea);
+                        if (String.IsNullOrEmpty(attrValue))
+                        {
+                            attrValueArray = attrValue.Split(",");
+                        }
+
+                        if (attributeIdArray.Length == attrValueArray.Length)
+                        {
+                            for (int i = 0; i < attributeIdArray.Length; i++)
+                            {
+                                CampaignEventAttribute cea = new CampaignEventAttribute
+                                {
+                                    CampaignEventId = ce.CampaignEventId,
+                                    CampaignActionAttributeId = int.Parse(attributeIdArray[i]),
+                                    AttributeValue = attrValueArray[i]
+                                };
+                                _dbCtx.CampaignEventAttribute.Add(cea);
+                            }
+                        }
+                        else
+                        {
+                            // What to do in this state?  
+                        }
+                    }
+                    else
+                    {
+                        // Condition for Single Attribute, with possible AttributeValue
+                        CampaignEventAttribute cea = new CampaignEventAttribute
+                        {
+                            CampaignEventId = ce.CampaignEventId,
+                            CampaignActionAttributeId = int.Parse(attributeId),
+                            AttributeValue = attrValue
+                        };
+                        _dbCtx.CampaignEventAttribute.Add(cea);
+                    }
+                    _dbCtx.SaveChanges();
                 }
-                _dbCtx.SaveChanges();
+
+                // Reconcile params in data-dict 
+                if (dataDict.Keys.Count > 0) {
+                    foreach (string k in dataDict.Keys)
+                    {
+                        CampaignEventAttribute cea = new CampaignEventAttribute
+                        {
+                            CampaignEventId = ce.CampaignEventId,
+                            CampaignActionAttributeId = int.Parse(k),
+                            AttributeValue = dataDict[k]
+                        };
+                        _dbCtx.CampaignEventAttribute.Add(cea);
+                    }
+                    _dbCtx.SaveChanges();
+                }
             }
             catch (Exception ex)
             {
@@ -236,7 +350,6 @@ namespace BackBeacon.Controllers
         }
 
 
-
         private Tuple<int,string> StopAndCalcRuntime(Stopwatch s)
         {
             s.Stop();
@@ -246,6 +359,53 @@ namespace BackBeacon.Controllers
                 ts.Milliseconds / 10);
             return new Tuple<int, string>(ts.Milliseconds, "Elapsed:" + elapsedTime);
         }
+
+        private IDictionary<string, string> ParseQueryStringForAtttributes(bool skipReserved = false)
+        {
+            IDictionary<string, string> d = new Dictionary<string, string>();
+            IQueryCollection qc = _httpCtx.GetContext().Request.Query;
+            foreach (string k in qc.Keys)
+            {
+                if (!skipReserved || (skipReserved && !RESERVED_PARAMS.Contains(k.ToLower()))) {
+                    string v = _httpCtx.GetContext().Request.Query[k];
+                    d.Add(k, v);
+                }
+            }
+            return d;
+        }
+
+        private IDictionary<string, string> ParseFormForAtttributes(bool skipReserved = false)
+        {
+            IDictionary<string, string> d = new Dictionary<string, string>();
+            IFormCollection qc = _httpCtx.GetContext().Request.Form;
+            foreach (string k in qc.Keys)
+            {
+                if (!skipReserved || (skipReserved && !RESERVED_PARAMS.Contains(k.ToLower())))
+                {
+                    string v = _httpCtx.GetContext().Request.Query[k];
+                    d.Add(k, v);
+                }
+            }
+            return d;
+        }
+
+
+        private IDictionary<string, string> ParseJsonForAtttributes(string json, bool skipReserved = true)
+        {
+            IDictionary<string, string> d = JsonConvert.DeserializeObject<Dictionary<string, string>>(json);
+            if (skipReserved)
+            {
+                foreach (string k in d.Keys)
+                {
+                    if (RESERVED_PARAMS.Contains(k.ToLower()))
+                    {
+                        d.Remove(k);
+                    }
+                }
+            }
+            return d;
+        }
+
 
         private Exception BltInputParamsException(string v)
         {

@@ -6,10 +6,12 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.EntityFrameworkCore;
 using BackBeacon.Services;
 using System;
+using System.Net;
 using Hangfire;
 using Hangfire.SqlServer;
 using System.IO;
 using Microsoft.AspNetCore.Rewrite;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace BackBeacon
 {
@@ -131,6 +133,14 @@ namespace BackBeacon
             // If the app uses session state, call Session Middleware after Cookie 
             // Policy Middleware and before MVC Middleware.
             app.UseSession();
+
+            app.UseForwardedHeaders(new ForwardedHeadersOptions
+            {
+                ForwardedHeaders = ForwardedHeaders.All,
+                RequireHeaderSymmetry = false,
+                ForwardLimit = null,
+                KnownNetworks = { new IPNetwork(IPAddress.Parse("::ffff:172.17.0.1"), 104) }
+            });
 
             //app.UseHttpContextItemsMiddleware();
             app.UseHangfireDashboard();

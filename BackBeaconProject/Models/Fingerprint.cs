@@ -4,6 +4,7 @@ using System.Collections.Specialized;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using Microsoft.Net.Http.Headers;
 
 namespace BackBeacon.Models
 {
@@ -20,44 +21,23 @@ namespace BackBeacon.Models
 
         public string Generate()
         {
-            string ipAddress = GetIpAddress();
+            string ipAddress = _httpCtx.GetIpAddress();
 
-            string protocol = !string.IsNullOrEmpty( _httpCtx.GetRequestHeader("SERVER_PROTOCOL"))  ? _httpCtx.GetRequestHeader("SERVER_PROTOCOL") : string.Empty;
-            string encoding = !string.IsNullOrEmpty(_httpCtx.GetRequestHeader("HTTP_ACCEPT_ENCODING")) ? _httpCtx.GetRequestHeader("HTTP_ACCEPT_ENCODING") : string.Empty;
-            string language = !string.IsNullOrEmpty(_httpCtx.GetRequestHeader("HTTP_ACCEPT_LANGUAGE")) ? _httpCtx.GetRequestHeader("HTTP_ACCEPT_LANGUAGE") : string.Empty;
-            string userAgent = !string.IsNullOrEmpty(_httpCtx.GetRequestHeader("HTTP_USER_AGENT")) ? _httpCtx.GetRequestHeader("HTTP_USER_AGENT") : string.Empty;
-            string accept = !string.IsNullOrEmpty(_httpCtx.GetRequestHeader("HTTP_ACCEPT")) ? _httpCtx.GetRequestHeader("HTTP_ACCEPT") : string.Empty;
+            //string sp = _httpCtx.GetContext().Request.Headers[HeaderNames.];
+            string ec = _httpCtx.GetContext().Request.Headers[HeaderNames.AcceptEncoding];
+            string al = _httpCtx.GetContext().Request.Headers[HeaderNames.AcceptLanguage];
+            string ua = _httpCtx.GetContext().Request.Headers[HeaderNames.UserAgent];
+            string ac = _httpCtx.GetContext().Request.Headers[HeaderNames.Accept];
+
+            string protocol = _httpCtx.GetContext().Request.IsHttps ? "HTTPS" : "HTTP";
+            string encoding = !string.IsNullOrEmpty(ec) ? ec : string.Empty;
+            string language = !string.IsNullOrEmpty(al) ? al : string.Empty;
+            string userAgent = !string.IsNullOrEmpty(ua) ? ua : string.Empty;
+            string accept = !string.IsNullOrEmpty(ac) ? ac : string.Empty;
 
             string stringToTokenise = ipAddress + protocol + encoding + language + userAgent + accept;
 
             return GetMd5Hash(_hasher, stringToTokenise);
-        }
-
-        public string GetIpAddress()
-        {
-            string address = string.Empty;
-
-            if (!string.IsNullOrEmpty(_httpCtx.GetRequestHeader("HTTP_CLIENT_IP")))
-            {
-                address = _httpCtx.GetRequestHeader("HTTP_CLIENT_IP");
-            }
-
-            if (!string.IsNullOrEmpty(_httpCtx.GetRequestHeader("HTTP_X_FORWARDED_FOR")))
-            {
-                address = _httpCtx.GetRequestHeader("HTTP_X_FORWARDED_FOR");
-            }
-
-            if (!string.IsNullOrEmpty(_httpCtx.GetRequestHeader("REMOTE_ADDR")))
-            {
-                address = _httpCtx.GetRequestHeader("REMOTE_ADDR");
-            }
-
-            if (string.IsNullOrEmpty(address))
-            {
-                address = "0.0.0.0";
-            }
-
-            return address;
         }
 
         private string GetMd5Hash(MD5 md5Hash, string input)

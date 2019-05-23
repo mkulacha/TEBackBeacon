@@ -4,9 +4,9 @@ namespace BackBeacon.Services
 {
     public interface IHttpContextualizer
     {
-        HttpContext HttpContext();
+        HttpContext GetContext();
         string GetRequestHeader(string key);
-        string GetReferrer();
+        string GetReferer();
         string GetSessionId();
         string GetTraceId();
         string GetUserAgent();
