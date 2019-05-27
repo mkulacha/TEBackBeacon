@@ -125,7 +125,9 @@ namespace BackBeacon.Controllers
                 BeaconTimestamp = bts,
                 StashType = stashType,
                 HttpMethod = httpMethod,
-                DataDict = dataDict
+                DataDict = dataDict,
+                RemoteSystemId = remoteSystemId,
+                RemoteSystemUserId = remoteSystemUserId
             };  
 
             try

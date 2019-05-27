@@ -10,6 +10,8 @@ namespace BackBeacon.Models
         public DateTime BeaconTimestamp { get; set; } 
         public string BeaconId { get; set; }
         public int UniversalClientId { get; set; }
+        public string RemoteSystemId { get; set; }
+        public string RemoteSystemUserId { get; set; }
         public int CampaignId { get; set; }
         public int ActionId { get; set; }
         public string AttributeId { get; set; }
