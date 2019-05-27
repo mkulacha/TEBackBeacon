@@ -1,0 +1,15 @@
+﻿<html>
+<head>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js">
+</script>
+</head>
+<body>
+    <script type="text/javascript">
+        var webApiUrl = "https://dev.adxtravel.com:5001/api/blt/pixel";
+        (function () { 
+              $.ajax({ url: webApiUrl, type: "GET", async: true, crossDomain: true, xhrFields: { withCredentials: true }, headers: { "Access-Control-Allow-Origin": "*" }, success: function (result) { }, error: function (xhr, status) { } })
+        })();
+
+    </script>
+</body>
+</html>

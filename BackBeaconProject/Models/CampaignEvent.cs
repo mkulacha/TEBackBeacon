@@ -19,6 +19,7 @@ namespace BackBeacon.Models
         public string UserAgent { get; set; }
         public string WebSessionId { get; set; }
         public DateTime? ServerTimeStamp { get; set; }
+        public string PageUrl { get; set; }
 
         public virtual CampaignAction CampaignAction { get; set; }
         public virtual UniversalClient UniversalClient { get; set; }

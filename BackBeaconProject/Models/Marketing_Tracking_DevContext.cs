@@ -31,10 +31,9 @@ namespace BackBeacon.Models
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-           // if (!optionsBuilder.IsConfigured)
-            //{
-                //optionsBuilder.UseSqlServer("Server=sql-srv;Database=Marketing_Tracking_Dev;Trusted_Connection=false;User ID=mkt_dev;Password=fSff=6Jyk+r2Z*kD");
-            //}
+            if (!optionsBuilder.IsConfigured)
+            {
+            }
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -141,6 +140,11 @@ namespace BackBeacon.Models
             modelBuilder.Entity<CampaignEvent>(entity =>
             {
                 entity.Property(e => e.BrowserFootprint)
+                    .HasMaxLength(4000)
+                    .IsUnicode(false);
+
+                entity.Property(e => e.PageUrl)
+                    .HasColumnName("PageURL")
                     .HasMaxLength(4000)
                     .IsUnicode(false);
 

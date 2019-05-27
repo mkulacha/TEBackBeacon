@@ -1,14 +1,12 @@
 ﻿
 
-
 BLT.event = function () {
     this.campaign = '';
     this.action = '';
     this.attributes = {};
     this.pagetoken = '';    
-    this.setAttribute('timestamp', OWA.util.getCurrentUnixTimestamp());
+    this.setAttribute('timestamp', BLT.util.getCurrentUnixTimestamp());
 }
-
 
 BLT.event.prototype = {
     get: function (name) {
@@ -39,13 +37,13 @@ BLT.event.prototype = {
     }
 }
 
-OWA.commandQueue = function () {
-    OWA.debug('Command Queue object created');
+OWA.eventqueue = function () {
+    BLT.debug('Command Queue object created');
     var asyncCmds = [];
     var is_paused = false;
 }
 
-OWA.commandQueue.prototype = {
+OWA.eventqueue.prototype = {
     push: function (cmd, callback) {
 
         //alert(func[0]);
@@ -57,7 +55,7 @@ OWA.commandQueue.prototype = {
         var check = OWA.util.strpos(cmd[0], '.');
 
         if (!check) {
-            obj_name = 'OWATracker';
+            obj_name = 'BLT';
             method = cmd[0];
         } else {
             var parts = cmd[0].split('.');
@@ -65,11 +63,10 @@ OWA.commandQueue.prototype = {
             method = parts[1];
         }
 
-        OWA.debug('cmd queue object name %s', obj_name);
-        OWA.debug('cmd queue object method name %s', method);
+        BLT.debug('eventqueue object name %s', obj_name);
+        BLT.debug('eventqueue object method name %s', method);
 
-        if (method === "pause-   ") {
-
+        if (method === "pause-") {
             this.pause();
         }
 
@@ -77,24 +74,21 @@ OWA.commandQueue.prototype = {
         // used to stop tracking		
         if (!this.is_paused) {
 
-            // is OWATracker created?
+            // is BLT created?
             if (typeof window[obj_name] == "undefined") {
-                OWA.debug('making global object named: %s', obj_name);
-                window[obj_name] = new OWA.tracker({ globalObjectName: obj_name });
+                BLT.debug('making global object named: %s', obj_name);
+                window[obj_name] = new BLT.tracker({ globalObjectName: obj_name });
             }
-
             window[obj_name][method].apply(window[obj_name], args);
         }
 
-        if (method === "unpause-owa") {
-
+        if (method === "unpause-blt") {
             this.unpause();
         }
 
         if (callback && (typeof callback == 'function')) {
             callback();
         }
-
     },
 
     loadCmds: function (cmds) {
@@ -115,7 +109,6 @@ OWA.commandQueue.prototype = {
         // give the first item in the queue & the callback to the handler
         this.push(this.asyncCmds.shift(), callback);
 
-
 		/*
 		for (var i=0; i < this.asyncCmds.length;i++) {
 			this.push(this.asyncCmds[i]);
@@ -126,13 +119,13 @@ OWA.commandQueue.prototype = {
     pause: function () {
 
         this.is_paused = true;
-        OWA.debug('Pausing Command Queue');
+        BLT.debug('Pausing EventQueue');
     },
 
     unpause: function () {
 
         this.is_paused = false;
-        OWA.debug('Un-pausing Command Queue');
+        BLT.debug('Un-pausing EventQueue');
     }
 };
 

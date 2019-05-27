@@ -19,11 +19,17 @@ namespace BackBeacon.Services
             if (HttpContext.Request.Cookies[cookieName]== null)
             {
                 // Create New
+                double expiryMillis = GetExpirationMillis();
+
                 HttpContext.Response.Cookies.Append(
-                    cookieName, 
-                    cookieValue, 
+                    cookieName,
+                    cookieValue,
                     new CookieOptions() {
-                        Expires = DateTime.Now.AddMilliseconds(GetExpirationMillis())
+                        Expires = DateTime.Now.AddYears(11),
+                        //Expires = DateTime.Now.AddMilliseconds(expiryMillis),
+                        Domain = ".adxtravel.com",
+                        SameSite = SameSiteMode.None,
+                        Path = "/"
                     } );
             }
         }
@@ -63,7 +69,7 @@ namespace BackBeacon.Services
         private double GetExpirationMillis()
         {
             DateTime start = DateTime.Now;
-            string endDateString = "19/01/2038";
+            string endDateString = "31/12/2037";
             DateTime end = DateTime.ParseExact(endDateString, "dd/MM/yyyy", CultureInfo.InvariantCulture);
             TimeSpan span = end.Date - start.Date;
             double ms = span.TotalMilliseconds;

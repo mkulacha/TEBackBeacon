@@ -12,6 +12,7 @@ using Hangfire.SqlServer;
 using System.IO;
 using Microsoft.AspNetCore.Rewrite;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.Http;
 
 namespace BackBeacon
 {
@@ -46,15 +47,15 @@ namespace BackBeacon
             */
             //var corsOriginsList = new List<string>(ConfigurationManager.AppSettings["CorsOrigins"].Split(new char[] { ';' }));
 
-            services.AddCors(options =>
-            {
-                options.AddPolicy("CorsPolicy",
-                    builder => builder.AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader()
-                    .AllowCredentials());
-            });
-
+            //services.AddCors(options =>
+            //{
+            //    options.AddPolicy("CorsPolicy",
+            //        builder => builder.AllowAnyOrigin()
+            //        .AllowAnyMethod()
+            //        .AllowAnyHeader()
+            ///        .AllowCredentials());
+            //});
+            //services.AddCors();
 
             services.AddDistributedMemoryCache();
             services.AddSession(options =>
@@ -62,6 +63,9 @@ namespace BackBeacon
                 options.Cookie.Domain = ".adxtravel.com";
                 options.IdleTimeout = TimeSpan.FromMinutes(20);
                 options.Cookie.HttpOnly = true;
+                options.Cookie.SameSite = SameSiteMode.None;
+                options.Cookie.Path = "/";
+                
             });
 
             //https://docs.microsoft.com/en-us/aspnet/core/security/cookie-sharing?view=aspnetcore-2.2
@@ -69,6 +73,8 @@ namespace BackBeacon
 
             services.AddHangfire(x => x.UseSqlServerStorage(Configuration.GetConnectionString("JobsDatabase")));
             services.AddHangfireServer();
+
+            services.AddCors();
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
@@ -100,9 +106,6 @@ namespace BackBeacon
 
             // Use HTTPS Redirection Middleware to redirect HTTP requests to HTTPS.
             app.UseHttpsRedirection();
-
-            //app.UseCors(MyAllowSpecificOrigins);
-            app.UseCors("CorsPolicy");
 
             // URL Rewrite 
             using (StreamReader apacheModRewriteStreamReader = File.OpenText("ApacheModRewrite.txt"))
@@ -144,6 +147,15 @@ namespace BackBeacon
 
             //app.UseHttpContextItemsMiddleware();
             app.UseHangfireDashboard();
+
+            //app.UseCors(MyAllowSpecificOrigins);
+            //app.UseCors("CorsPolicy");
+            app.UseCors(builder => builder
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials());
+
 
             // Add MVC to the request pipeline.
             app.UseMvc();

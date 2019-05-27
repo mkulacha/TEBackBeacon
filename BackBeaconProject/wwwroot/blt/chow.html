@@ -1,0 +1,83 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Beacon Test Page</title>
+    <script>
+        var url = window.location.pathname;
+
+        function lightBeacon(campaignId, actionId, attributeId = null, attrValue = null) {
+
+            // ASSEMBLE PARAMETERS
+            var parameters = "";
+            parameters += "pageToken=" + url;
+            parameters += "&campaignId=" + campaignId;
+            parameters += "&actionId=" + actionId;
+            if (attributeId != null)
+                parameters += "&attributeId=" + attributeId;
+            if (attrValue != null)
+                parameters += "&attrValue=" + attrValue;
+
+            // BLT WEBAPI METHOD URL/SIGNATURE
+            var webApiUrl = "https://dev.adxtravel.com:5001/api/blt/pixel?" + parameters;
+
+            // DEBUG
+            //var imgHtml = '<img src="' + webApiUrl + '" height="1" width="1" />';
+            //var iframeHtml = '<html><head></head><body></body></html>';
+            //var iframeImageHtml = '<html><body>' + imgHtml + '</body></html>';
+
+            // GENERATE IFRAME INNER HTML -> PAGE/AJAX QUERY
+            var iframeImageHtmlAjax = '' +
+                '<html><head><script src="https:\/\/ajax.googleapis.com\/ajax\/libs\/jquery\/3.4.0\/jquery.min.js"><\/script><\/head><body><script type="text/javascript">' +
+                //'(function () { ' +
+                //'$.ajax({ url: "' + webApiUrl + '", type: "GET", "async": true, crossDomain: true, xhrFields: { withCredentials: true }, "headers": { "Access-Control-Allow-Origin": "*" }, success: function (result) { }, error: function (xhr, status) { } })' +
+                //'})();' +
+                '<\/script><\/body><\/html>';
+
+            // GENERATE IFRAME OBJECT
+            var f = document.createElement('iframe');
+            f.className = "hide";
+            f.width = 500;
+            f.height = 300;
+            //f.src = "data:text/html;charset=utf-8," + encodeURI(iframeHtml)
+
+            // ADD IFRAME TO CURRENT PAGE -> WRITE/EXECUTE INNER HTML
+            document.body.appendChild(f);
+            //$('body').append(f);
+            f.contentWindow.document.open();
+            f.contentWindow.document.write(iframeImageHtmlAjax);
+            f.contentWindow.document.close();
+        }
+
+    </script>
+</head>
+<body>
+    <div>
+        <H1>
+            Beacon Test Page @
+            <script type="text/javascript">document.write(window.location.hostname);</script>
+        </H1>
+    </div>
+
+    <form>
+        <!--
+
+        <span>Campaign ID</span><input type='text' id="cid"  />
+        <span>Action ID</span><input type='text' id="aid"  />
+        <span>Attribute ID</span><input type='text' id="tid"  />
+        <span>Attribute Value: </span><input type='text' id="tvl"  />
+        <span>PageToken</span></span><input type='text' id="pt" />
+        -->
+        <button onclick="lightBeacon('1', '1', '2', 'test');">Test</button>
+
+    </form>
+    <script type="text/javascript">
+
+                //document.getElementById("cid").setAttribute('value', '1');
+                //document.getElementById("aid").setAttribute('value', '1');
+                //document.getElementById("tid").setAttribute('value', '2');
+                //document.getElementById("tvl").setAttribute('value', 'TestData');
+                //document.getElementById("pt").setAttribute('value', window.location.href);
+    </script>
+</body>
+</html>

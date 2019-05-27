@@ -39,7 +39,7 @@ namespace BackBeacon.Models
 
         public void setGroup2(Services.IHttpContextualizer hc)
         {
-            SessionId = hc.GetSessionId();
+            //SessionId = hc.GetSessionId();
             UserAgent = hc.GetUserAgent();
             IpAddress = hc.GetIpAddress();
             Fingerprint = new Fingerprint(hc).Generate();

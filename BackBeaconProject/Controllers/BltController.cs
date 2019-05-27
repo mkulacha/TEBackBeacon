@@ -8,12 +8,14 @@ using Hangfire;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
+using Microsoft.AspNetCore.Cors;
 
 /**
  * BLT - Beacon Log Tracker Controller
  */
 namespace BackBeacon.Controllers
-{
+{ 
+    [EnableCors()]
     [Route("api/[controller]")]
     [ApiController]
     public class BltController : ControllerBase
@@ -41,12 +43,12 @@ namespace BackBeacon.Controllers
         // <
         //[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         [HttpGet("pixel")]
-        public ActionResult<string> GetPixelAction(string uid, string session, string pageToken, int campaignId, int actionId, string attributeId, string attrValue)
+        public ActionResult<string> GetPixelAction(string uid, string session, string rsid, string rsuid, string pageToken, int campaignId, int actionId, string attributeId, string attrValue)
         {
             const string HTTP_METHOD = "GET";
             const string STASH_TYPE = "pixel";
 
-            this.StashEvent(STASH_TYPE, HTTP_METHOD, uid, session, pageToken, campaignId, actionId, attributeId, attrValue, this.ParseQueryStringForAtttributes(true));
+            this.StashEvent(STASH_TYPE, HTTP_METHOD, uid, session, rsid, rsuid, pageToken, campaignId, actionId, attributeId, attrValue, this.ParseQueryStringForAtttributes(true));
      
             return File(System.Convert.FromBase64String(TRACKING_PIXEL), MIME_TYPE_IMG_GIF);
         }
@@ -93,7 +95,7 @@ namespace BackBeacon.Controllers
             {
                 ConsumePostData cpd = JsonConvert.DeserializeObject<ConsumePostData>(json);
 
-                if (this.StashEvent(STASH_TYPE, HTTP_METHOD, cpd.UID, cpd.Session, cpd.PageToken, cpd.CampaignId, cpd.ActionId, cpd.AttributeId, cpd.AttrValue, this.ParseJsonForAtttributes(json, true)))
+                if (this.StashEvent(STASH_TYPE, HTTP_METHOD, cpd.UID, cpd.Session, "", "", cpd.PageToken, cpd.CampaignId, cpd.ActionId, cpd.AttributeId, cpd.AttrValue, this.ParseJsonForAtttributes(json, true)))
                 {
                     return Ok("{ \"status\": \"OK\" }");
                 }
@@ -109,7 +111,7 @@ namespace BackBeacon.Controllers
         }
 
         // Inner Function: Stash - process/log event
-        private bool StashEvent(string stashType, string httpMethod, string uid, string session, string pageToken, int campaignId, int actionId, string attributeId, string attrValue, IDictionary<string,string> dataDict)
+        private bool StashEvent(string stashType, string httpMethod, string uid, string session, string remoteSystemId, string remoteSystemUserId, string pageToken, int campaignId, int actionId, string attributeId, string attrValue, IDictionary<string,string> dataDict)
         {
             Stopwatch stopWatch = new Stopwatch();
             stopWatch.Start();
@@ -151,12 +153,16 @@ namespace BackBeacon.Controllers
                 else
                 {
                     universalId = this.ResolveBeaconUserIdentifier(uid);
+                    // FORCE COOKIE CREATION FOR SEND IN UID (Temporary)
+                    _cookieSvc.AddReplaceCookie(COOKIE_NAME_BEACON, uid);
                 }
+
+                string sessionId = !String.IsNullOrEmpty(session) ? session : _httpCtx.GetSessionId();
+                t.SessionId = sessionId;
 
                 // BEACON STORAGE
                 BackgroundJob.Enqueue(() => this.StoreBeaconDataset(
-                    bts, universalId, campaignId, actionId, attributeId, attrValue, dataDict,
-                    (!String.IsNullOrEmpty(session)? session: _httpCtx.GetSessionId()), 
+                    bts, universalId, remoteSystemId, remoteSystemUserId, campaignId, actionId, attributeId, attrValue, pageToken, dataDict, sessionId, 
                     _httpCtx.GetUserAgent(), 
                     _httpCtx.GetIpAddress(),
                     new Fingerprint(_httpCtx).Generate()));
@@ -248,7 +254,7 @@ namespace BackBeacon.Controllers
             return universalId;
         }
 
-        public void StoreBeaconDataset(DateTime bts, int universalId, int campaignId, int actionId, string attributeId, string attrValue, IDictionary<string,string> dataDict, string sessionId, string userAgent, string ip, string footprint)
+        public void StoreBeaconDataset(DateTime bts, int universalId, string remoteSystemId, string remoteSystemUserId, int campaignId, int actionId, string attributeId, string attrValue, string pageToken, IDictionary<string,string> dataDict, string sessionId, string userAgent, string ip, string footprint)
         { 
             try {
                 // Add Campaign Event
@@ -256,6 +262,7 @@ namespace BackBeacon.Controllers
                 {
                     UniversalClientId = universalId,
                     CampaignActionId = actionId,
+                    PageUrl = pageToken,
                     WebSessionId = sessionId,
                     UserAgent = userAgent,
                     RemoteAddress = ip,
@@ -323,6 +330,22 @@ namespace BackBeacon.Controllers
                     }
                     _dbCtx.SaveChanges();
                 }
+
+                /*
+                var query = _dbCtx.UniversalClientLink as IQueryable<UniversalClientLink>;
+                query = query.Where(x => (x.UniversalClientId == universalId && x.SystemId == remoteSystemUserId  && x.RemoteId == remoteSystemId);
+                UniversalClient[] list = query.ToArray<UniversalClient>();
+                if (list.Length == 0)
+                {
+                    UniversalClientLink ucl = new UniversalClientLink
+                    {
+                        UniversalClientId = universalId,
+                        
+                        SystemId = remoteSystemUserId
+
+                    };
+                }
+                */
             }
             catch (Exception ex)
             {
